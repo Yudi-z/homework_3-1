@@ -5,43 +5,44 @@ from ibapi.contract import Contract
 import threading
 import time
 
-def fetch_managed_accounts():
 
-    class ibkr_app(EWrapper, EClient):
-        def __init__(self):
-            EClient.__init__(self, self)
-            self.error_messages = pd.DataFrame(columns = [
-                'reqId', 'errorCode', 'errorString'
-            ])
-            self.managed_accounts = []
+class ibkr_app(EWrapper, EClient):
+    def __init__(self):
+        EClient.__init__(self, self)
+        self.error_messages = pd.DataFrame(columns=[
+            'reqId', 'errorCode', 'errorString'
+        ])
+        self.managed_accounts = []
 
-        def error(self, reqId, errorCode, errorString):
-            print("Error: ", reqId, " ", errorCode, " ", errorString)
+    def error(self, reqId, errorCode, errorString):
+        print("Error: ", reqId, " ", errorCode, " ", errorString)
 
-        def managedAccounts(self, accountsList):
-            self.managed_accounts = [i for i in accountsList.split(",") if i]
+    def managedAccounts(self, accountsList):
+        self.managed_accounts = [i for i in accountsList.split(",") if i]
 
-    app = ibkr_app()
 
-    app.connect('127.0.0.1', 7497, 10645)
-    while not app.isConnected():
-        time.sleep(0.5)
+app = ibkr_app()
 
-    print('connected')
+app.connect('127.0.0.1', 7497, 10645)
+while not app.isConnected():
+    time.sleep(0.5)
 
-    def run_loop():
-        app.run()
+print('connected')
 
-    # Start the socket in a thread
-    api_thread = threading.Thread(target=run_loop, daemon=True)
-    api_thread.start()
 
-    while len(app.managed_accounts) == 0:
-        time.sleep(0.5)
+def run_loop():
+    app.run()
 
-    print('handshake complete')
 
-    return app.managed_accounts
+# Start the socket in a thread
+api_thread = threading.Thread(target=run_loop, daemon=True)
+api_thread.start()
+
+while len(app.managed_accounts) == 0:
+    time.sleep(0.5)
+
+print('handshake complete')
+
 
 
 def req_historical_data(tickerId, contract, endDateTime, durationStr,
@@ -63,6 +64,13 @@ def req_historical_data(tickerId, contract, endDateTime, durationStr,
             #   so that it's accepted by the plotly candlestick function.
             # Take a look at candlestick_plot.ipynb for some help!
             # assign the dataframe to self.historical_data.
+            list_tmp = [i for i in str(bar).split(", ") if i]
+            col, data = [], []
+            col.extend([i.split(": ")[0] for i in list_tmp])
+            data = [i.split(": ")[1] for i in list_tmp]
+            df = pd.DataFrame(data).T
+            df.columns = col
+            self.historical_data = pd.concat([self.historical_data, df])
             print(reqId, bar)
 
     app = ibkr_app()
