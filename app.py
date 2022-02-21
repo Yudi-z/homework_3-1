@@ -237,20 +237,14 @@ def update_candlestick_graph(n_clicks, currency_string, what_to_show,
     # Don't forget -- you'll need to update the signature in this callback
     #   function to include your new vars!
 
-    # endDateTime = edt_date + edt_hour + edt_minute + edt_second
-    # t = datetime.time(hours=edt_hour,minutes=edt_minute,seconds=edt_second)
-    # date = datetime.date(edt_date)
-    # combine_t = date.combine(date,t)
-    # datestr = "%s %s:%s:%s"%(edt_date,edt_hour,edt_minute,edt_second)
-    # datestr2 = str(edt_hour) + str(edt_minute) +str(edt_second)
     td = timedelta(seconds=edt_second, minutes=edt_minute,hours=edt_hour)
     date1 = datetime.strptime(edt_date, '%Y-%m-%d')
     new_datetime = date1 + td
     timestr = new_datetime.strftime("%Y%m%d %H:%M:%S")
-    print("date",date1)
-    print("td",td)
-    print(new_datetime)
-    print("str",timestr)
+    # print("date",date1)
+    # print("td",td)
+    # print(new_datetime)
+    # print("str",timestr)
 
 
     cph = fetch_historical_data(
