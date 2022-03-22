@@ -134,10 +134,12 @@ def fetch_contract_details(contract, hostname=default_hostname,
     api_thread = threading.Thread(target=run_loop, daemon=True)
     api_thread.start()
     while isinstance(app.next_valid_id, type(None)):
+        # print('line 137')
         time.sleep(0.01)
     tickerId = app.next_valid_id
     app.reqContractDetails(tickerId, contract)
     while app.contract_details_end != tickerId:
+        # print('line142')
         time.sleep(0.01)
     app.disconnect()
     return app.contract_details
