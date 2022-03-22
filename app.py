@@ -6,7 +6,7 @@ from dash.dependencies import Input, Output, State
 from ibapi.contract import Contract
 from fintech_ibkr import *
 import pandas as pd
-from datetime import datetime,timedelta,date
+from datetime import datetime, timedelta, date
 
 # Make a Dash app!
 app = dash.Dash(__name__)
@@ -132,7 +132,7 @@ app.layout = html.Div([
             options=[
                 {'label': 'True', 'value': '1'},
                 {'label': 'False', 'value': '0'},
-        ], value = '1', id='useRTH', style={'width': '365px'})
+            ], value='1', id='useRTH', style={'width': '365px'})
     ]),
 
     html.H4("Enter a currency pair:"),
@@ -161,7 +161,12 @@ app.layout = html.Div([
     # Div to hold the initial instructions and the updated info once submit is pressed
     html.Div(id='currency-output', children='Enter a currency code and press submit'),
     # Div to hold the candlestick graph
-    html.Div([dcc.Graph(id='candlestick-graph')]),
+    dcc.Loading(
+        id="loading-1",
+        type="default",
+        children=html.Div([dcc.Graph(id='candlestick-graph')])
+    ),
+    # html.Div([dcc.Graph(id='candlestick-graph')]),
     # Another line break
     html.Br(),
     # Section title
@@ -213,8 +218,12 @@ def update_candlestick_graph(n_clicks, currency_string, what_to_show,
 
     if any([i is None for i in [edt_date, edt_hour, edt_minute, edt_second]]):
         endDateTime = ''
-    else:
-        print(edt_date, edt_hour, edt_minute, edt_second)
+    # else:
+    #     # print(edt_date, edt_hour, edt_minute, edt_second)
+    #     td = timedelta(seconds=edt_second, minutes=edt_minute, hours=edt_hour)
+    #     date1 = datetime.strptime(edt_date, '%Y-%m-%d')
+    #     new_datetime = date1 + td
+    #     endDateTime = new_datetime.strftime("%Y%m%d %H:%M:%S")
 
     # First things first -- what currency pair history do you want to fetch?
     # Define it as a contract object!
@@ -237,23 +246,18 @@ def update_candlestick_graph(n_clicks, currency_string, what_to_show,
     # Don't forget -- you'll need to update the signature in this callback
     #   function to include your new vars!
 
-    td = timedelta(seconds=edt_second, minutes=edt_minute,hours=edt_hour)
+    td = timedelta(seconds=edt_second, minutes=edt_minute, hours=edt_hour)
     date1 = datetime.strptime(edt_date, '%Y-%m-%d')
     new_datetime = date1 + td
-    timestr = new_datetime.strftime("%Y%m%d %H:%M:%S")
-    # print("date",date1)
-    # print("td",td)
-    # print(new_datetime)
-    # print("str",timestr)
-
+    endDateTime = new_datetime.strftime("%Y%m%d %H:%M:%S")
 
     cph = fetch_historical_data(
         contract=contract,
-        endDateTime= timestr,
-        durationStr="{} {}".format(duration, duration_unit),       # <-- make a reactive input
+        endDateTime=endDateTime,
+        durationStr="{} {}".format(duration, duration_unit),  # <-- make a reactive input
         barSizeSetting=barSize,  # <-- make a reactive input
         whatToShow=what_to_show,
-        useRTH=useRTH               # <-- make a reactive input
+        useRTH=useRTH  # <-- make a reactive input
     )
     # # # # Make the candlestick figure
     fig = go.Figure(
@@ -296,7 +300,15 @@ def update_candlestick_graph(n_clicks, currency_string, what_to_show,
     ############################################################################
 
     # Return your updated text to currency-output, and the figure to candlestick-graph outputs
-    return ('Submitted query for ' + currency_string), fig
+    contract_details = fetch_contract_details(contract)
+    # print(contract_details)
+    output_contract_name = str(contract_details).split(",")[10]
+    if currency_string == output_contract_name:
+        return_statement = 'Submitted query for ' + currency_string + '(checked)'
+    else:
+        # output error message
+        return_statement = 'Incorrect input for currency pairs.'
+    return return_statement, fig
 
 
 # Callback for what to do when trade-button is pressed

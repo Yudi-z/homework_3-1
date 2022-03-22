@@ -12,7 +12,7 @@ from ibapi.wrapper import EWrapper
 import threading
 import time
 
-value = "EUR.USD" # This is what your text input looks like on your app
+value = "EUR.US" # This is what your text input looks like on your app
 
 # Create a contract object
 contract = Contract()
@@ -130,3 +130,7 @@ historical_data = fetch_historical_data(contract)
 print(historical_data)
 
 # This script is an excellent place for scratch work as you figure this out.
+
+contract_details = fetch_contract_details(contract)
+print(contract_details)
+output_contract_name = str(contract_details).split(",")[10]
