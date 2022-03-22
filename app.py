@@ -260,33 +260,19 @@ def update_candlestick_graph(n_clicks, currency_string, what_to_show,
         useRTH=useRTH  # <-- make a reactive input
     )
     # # # # Make the candlestick figure
-    contract_details = fetch_contract_details(contract)
-    # print(contract_details)
-    if contract_details:
-        output_contract_name = str(contract_details).split(",")[10]
-    else:
-        output_contract_name = ''
-    if currency_string == output_contract_name:
-        return_statement = 'Submitted query for ' + currency_string + '(checked)'
-        fig = go.Figure(
-            data=[
-                go.Candlestick(
-                    x=cph['date'],
-                    open=cph['open'],
-                    high=cph['high'],
-                    low=cph['low'],
-                    close=cph['close']
-                )
-            ]
-        )
-        # # # Give the candlestick figure a title
-        fig.update_layout(title=('Exchange Rate: ' + currency_string))
-    else:
-        # output error message
-        return_statement = 'Incorrect input for currency pairs.'
-        fig = go.Figure()
-        fig.update_layout(title='Bad contract request.')
-
+    fig = go.Figure(
+        data=[
+            go.Candlestick(
+                x=cph['date'],
+                open=cph['open'],
+                high=cph['high'],
+                low=cph['low'],
+                close=cph['close']
+            )
+        ]
+    )
+    # # # Give the candlestick figure a title
+    fig.update_layout(title=('Exchange Rate: ' + currency_string))
     ############################################################################
     ############################################################################
 
@@ -314,7 +300,17 @@ def update_candlestick_graph(n_clicks, currency_string, what_to_show,
     ############################################################################
 
     # Return your updated text to currency-output, and the figure to candlestick-graph outputs
-
+    contract_details = fetch_contract_details(contract)
+    # print(contract_details)
+    if contract_details:
+        output_contract_name = str(contract_details).split(",")[10]
+    else:
+        output_contract_name = ''
+    if currency_string == output_contract_name:
+        return_statement = 'Submitted query for ' + currency_string + '(checked)'
+    else:
+        # output error message
+        return_statement = 'Incorrect input for currency pairs.'
     return return_statement, fig
 
 
