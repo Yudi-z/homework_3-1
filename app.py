@@ -208,7 +208,8 @@ app.layout = html.Div([
      State('edt-date', 'date'), State('edt-hour', 'value'),
      State('edt-minute', 'value'), State('edt-second', 'value'),
      State('duration', 'value'), State('duration_unit', 'value'),
-     State('barSize', 'value'), State('useRTH', 'value')]
+     State('barSize', 'value'), State('useRTH', 'value')],
+    prevent_initial_call=True
 )
 def update_candlestick_graph(n_clicks, currency_string, what_to_show,
                              edt_date, edt_hour, edt_minute, edt_second,
@@ -250,6 +251,16 @@ def update_candlestick_graph(n_clicks, currency_string, what_to_show,
     date1 = datetime.strptime(edt_date, '%Y-%m-%d')
     new_datetime = date1 + td
     endDateTime = new_datetime.strftime("%Y%m%d %H:%M:%S")
+
+    try:
+        contract_details = fetch_contract_details(contract)
+    except:
+        return ("No contract found for " + currency_string), go.Figure()
+
+    output_contract_name = str(contract_details).split(",")[10]
+    if not output_contract_name == currency_string:
+        return ("Requested contract: " + currency_string + " but received " +
+                "contract: " + output_contract_name), go.Figure()
 
     cph = fetch_historical_data(
         contract=contract,
@@ -300,17 +311,9 @@ def update_candlestick_graph(n_clicks, currency_string, what_to_show,
     ############################################################################
 
     # Return your updated text to currency-output, and the figure to candlestick-graph outputs
-    contract_details = fetch_contract_details(contract)
-    # print(contract_details)
-    if contract_details:
-        output_contract_name = str(contract_details).split(",")[10]
-    else:
-        output_contract_name = ''
-    if currency_string == output_contract_name:
-        return_statement = 'Submitted query for ' + currency_string + '(checked)'
-    else:
-        # output error message
-        return_statement = 'Incorrect input for currency pairs.'
+
+    return_statement = 'Submitted query for ' + currency_string + '(checked)'
+
     return return_statement, fig
 
 
